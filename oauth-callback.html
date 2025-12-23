@@ -1,0 +1,122 @@
+<!-- oauth-callback.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Callback</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4285f4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loader"></div>
+        <h2>Processing Authentication...</h2>
+        <p>Please wait while we complete the authentication process.</p>
+        <p id="status">Initializing...</p>
+    </div>
+
+    <script>
+        // Fungsi untuk parse token dari URL
+        function getTokenFromURL() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) {
+                return { error: 'No authentication data found' };
+            }
+            
+            const params = new URLSearchParams(hash);
+            const access_token = params.get('access_token');
+            const expires_in = params.get('expires_in');
+            const error = params.get('error');
+            
+            if (error) {
+                return { 
+                    error: error,
+                    error_description: params.get('error_description')
+                };
+            }
+            
+            if (access_token) {
+                return {
+                    access_token: access_token,
+                    expires_in: expires_in ? parseInt(expires_in) : 3600
+                };
+            }
+            
+            return { error: 'Invalid response' };
+        }
+        
+        // Fungsi utama
+        function processCallback() {
+            const result = getTokenFromURL();
+            const statusElement = document.getElementById('status');
+            
+            if (result.error) {
+                statusElement.innerHTML = `Error: ${result.error}`;
+                statusElement.style.color = '#ff6b6b';
+                
+                // Simpan error di localStorage untuk debugging
+                localStorage.setItem('drive_auth_error', JSON.stringify(result));
+                
+                // Redirect back setelah 3 detik
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+                
+            } else {
+                statusElement.innerHTML = 'Authentication successful! Redirecting...';
+                
+                // Simpan token di localStorage
+                const expiryTime = Date.now() + (result.expires_in * 1000);
+                localStorage.setItem('drive_access_token', result.access_token);
+                localStorage.setItem('drive_token_expiry', expiryTime.toString());
+                localStorage.setItem('drive_auth_success', 'true');
+                
+                // Redirect kembali ke app
+                const returnUrl = localStorage.getItem('drive_return_url') || 'index.html';
+                
+                setTimeout(() => {
+                    window.location.href = returnUrl;
+                }, 1000);
+            }
+        }
+        
+        // Jalankan saat page load
+        window.onload = function() {
+            document.getElementById('status').innerHTML = 'Processing authentication data...';
+            
+            // Tunggu sebentar lalu process
+            setTimeout(processCallback, 1000);
+        };
+    </script>
+</body>
+</html>

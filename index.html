@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Monitoring Dana</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dana Management System</title>
+    
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Your CSS
+    <link rel="stylesheet" href="css/style.css"> -->
+
+
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Load configuration first -->
+    <script src="config.js"></script>
+  </head>
+  <body>
+ <!-- Your existing HTML structure -->
+    
+    
+    
+
+    <!-- Main Layout Container -->
+    <div class="main-container">
+      <!-- Top Navigation Bar -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary top-navbar">
+        <div class="container-fluid">
+          <!-- Brand and Toggle -->
+          <div class="d-flex align-items-center">
+            <button
+              class="btn btn-outline-light me-3 d-lg-none sidebar-toggle"
+              onclick="toggleSidebar()"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="#" onclick="showDashboard()">
+              <i class="fas fa-hand-holding-usd me-2"></i>Pendanaan NJ
+            </a>
+          </div>
+
+          <!-- Login Section - Hidden on Mobile -->
+          <div class="login-container d-none d-lg-flex">
+            <div id="login-status" class="text-white d-none">
+              <span id="user-email" class="me-2"></span>
+              <button onclick="auth.logout()" class="btn btn-sm btn-light">
+                Logout
+              </button>
+            </div>
+            <button id="login-btn" onclick="auth.login()" class="btn btn-light">
+              <i class="fas fa-sign-in-alt me-2"></i>Login
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content Wrapper -->
+      <div class="main-wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+          <!-- <div class="sidebar-header d-none d-lg-block">
+            <h5 class="mb-0"><i class="fas fa-bars me-2"></i>Menu</h5>
+          </div> -->
+          <div class="sidebar-content">
+            <ul class="nav nav-pills flex-column mb-auto" id="sidebar-nav">
+              <li class="nav-item">
+                <a href="#" class="nav-link active" onclick="showDashboard()">
+                  <i class="fas fa-tachometer-alt"></i>
+                  <span class="menu-text">Dashboard</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="#"
+                  class="nav-link"
+                  onclick="transaksi.showTransaksi()"
+                >
+                  <i class="fas fa-money-bill-wave"></i>
+                  <span class="menu-text">Transaksi Dana</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="#"
+                  class="nav-link"
+                  onclick="master.showMaster('kategori')"
+                >
+                  <i class="fas fa-tags"></i>
+                  <span class="menu-text">Master Kategori</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="#"
+                  class="nav-link"
+                  onclick="master.showMaster('setor')"
+                >
+                  <i class="fas fa-hand-holding"></i>
+                  <span class="menu-text">Master Setor</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="#"
+                  class="nav-link"
+                  onclick="master.showMaster('keterangan')"
+                >
+                  <i class="fas fa-sticky-note"></i>
+                  <span class="menu-text">Master Keterangan</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="laporan.showLaporan()">
+                  <i class="fas fa-chart-bar"></i>
+                  <span class="menu-text">Laporan</span>
+                </a>
+              </li>
+            </ul>
+
+            <!-- Sidebar Footer (Desktop only) -->
+            <!-- <div class="sidebar-footer d-none d-lg-block">
+              <hr />
+              <small class="text-muted">© 2024 Sistem Dana</small>
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content">
+          <div id="content-area">
+            <!-- Content will be loaded here dynamically -->
+            <div id="initial-loading">
+              <div class="spinner-container">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="bottom-nav" id="bottomNav">
+      <div class="bottom-nav-container">
+        <a
+          href="#"
+          class="nav-item-mobile active"
+          onclick="showDashboard()"
+          data-page="dashboard"
+        >
+          <i class="fas fa-tachometer-alt"></i>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a
+          href="#"
+          class="nav-item-mobile"
+          onclick="transaksi.showTransaksi()"
+          data-page="transaksi"
+        >
+          <i class="fas fa-money-bill-wave"></i>
+          <span class="nav-text">Transaksi</span>
+        </a>
+        <a
+          href="#"
+          class="nav-item-mobile"
+          onclick="showMasterMenu()"
+          data-page="master"
+        >
+          <i class="fas fa-tags"></i>
+          <span class="nav-text">Master</span>
+        </a>
+        <a
+          href="#"
+          class="nav-item-mobile"
+          onclick="laporan.showLaporan()"
+          data-page="laporan"
+        >
+          <i class="fas fa-chart-bar"></i>
+          <span class="nav-text">Laporan</span>
+        </a>
+        <!-- Login/Logout Button for Mobile -->
+        <a
+          href="#"
+          class="nav-item-mobile"
+          onclick="auth.login()"
+          id="mobile-login-btn"
+          data-page="login"
+        >
+          <i class="fas fa-sign-in-alt"></i>
+          <span class="nav-text">Login</span>
+        </a>
+        <a
+          href="#"
+          class="nav-item-mobile"
+          onclick="auth.logout()"
+          id="mobile-logout-btn"
+          style="display: none"
+          data-page="logout"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="nav-text">Logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Load JavaScript files in order -->
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/transaksi.js"></script>
+    <script src="js/master.js"></script>
+    <script src="js/laporan.js"></script>
+    <!-- Google Drive Service -->
+    <script src="js/drive-service.js"></script>
+    <script src="js/debug-drive.js"></script>
+    
+    <!-- Your scripts -->
+    <!-- <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+    <script src="api.js"></script> -->
+    
+    <!-- Modules -->
+    <!-- <script src="dashboard.js"></script>
+    <script src="transaksi.js"></script> -->
+    <!-- <script src="main.js"></script> -->
+
+    <!-- Responsive Navigation JS -->
+    <script>
+      // Responsive navigation functions
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const mainContent = document.getElementById("main-content");
+
+        sidebar.classList.toggle("show");
+        mainContent.classList.toggle("expanded");
+
+        if (sidebar.classList.contains("show")) {
+          document.body.style.overflow = "hidden";
+        } else {
+          document.body.style.overflow = "auto";
+        }
+      }
+
+      // Function untuk menutup sidebar jika terbuka
+      function closeSidebarIfOpen() {
+        const sidebar = document.getElementById("sidebar");
+        if (sidebar.classList.contains("show")) {
+          toggleSidebar();
+        }
+      }
+
+      function showMasterMenu() {
+        closeSidebarIfOpen();
+
+        if (window.innerWidth <= 992) {
+          const existingModal = document.getElementById("masterModal");
+          if (existingModal) {
+            existingModal.remove();
+          }
+
+          const modalHtml = `
+                    <div class="modal fade" id="masterModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Master Data</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action" onclick="master.showMaster('kategori'); closeMasterModal();">
+                                            <i class="fas fa-tags me-2"></i>Master Kategori
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" onclick="master.showMaster('setor'); closeMasterModal();">
+                                            <i class="fas fa-hand-holding me-2"></i>Master Setor
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" onclick="master.showMaster('keterangan'); closeMasterModal();">
+                                            <i class="fas fa-sticky-note me-2"></i>Master Keterangan
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+          const modalElement = document.getElementById("masterModal");
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+
+          window.masterModalInstance = modal;
+        } else {
+          master.showMaster("kategori");
+        }
+      }
+
+      function closeMasterModal() {
+        if (window.masterModalInstance) {
+          window.masterModalInstance.hide();
+        }
+        const modalElement = document.getElementById("masterModal");
+        if (modalElement) {
+          modalElement.remove();
+        }
+      }
+
+      // Update mobile login/logout buttons
+      function updateMobileAuthButtons() {
+        const mobileLoginBtn = document.getElementById("mobile-login-btn");
+        const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
+
+        if (auth.isLoggedIn()) {
+          mobileLoginBtn.style.display = "none";
+          mobileLogoutBtn.style.display = "flex";
+        } else {
+          mobileLoginBtn.style.display = "flex";
+          mobileLogoutBtn.style.display = "none";
+        }
+      }
+
+      // Override auth functions to update mobile buttons
+      const originalAuthInit = auth.init;
+      auth.init = function () {
+        if (originalAuthInit) {
+          originalAuthInit.call(this);
+        }
+        updateMobileAuthButtons();
+      };
+
+      const originalAuthLogin = auth.login;
+      auth.login = function () {
+        if (originalAuthLogin) {
+          originalAuthLogin.call(this);
+        }
+        updateMobileAuthButtons();
+      };
+
+      const originalAuthLogout = auth.logout;
+      auth.logout = function () {
+        if (originalAuthLogout) {
+          originalAuthLogout.call(this);
+        }
+        updateMobileAuthButtons();
+      };
+
+      // Update active navigation item
+      function updateActiveNav(page) {
+        // Update bottom nav
+        document.querySelectorAll(".nav-item-mobile").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        const activeItem = document.querySelector(
+          `.nav-item-mobile[data-page="${page}"]`
+        );
+        if (activeItem) {
+          activeItem.classList.add("active");
+        }
+
+        // Update sidebar nav
+        document.querySelectorAll("#sidebar-nav .nav-link").forEach((link) => {
+          link.classList.remove("active");
+        });
+
+        const pageMap = {
+          dashboard: "Dashboard",
+          transaksi: "Transaksi Dana",
+          laporan: "Laporan",
+        };
+
+        if (pageMap[page]) {
+          const sidebarItem = Array.from(
+            document.querySelectorAll("#sidebar-nav .nav-link")
+          ).find(
+            (link) =>
+              link.querySelector(".menu-text").textContent === pageMap[page]
+          );
+          if (sidebarItem) {
+            sidebarItem.classList.add("active");
+          }
+        }
+      }
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener("click", function (event) {
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.querySelector(".sidebar-toggle");
+
+        if (
+          window.innerWidth <= 992 &&
+          sidebar.classList.contains("show") &&
+          !sidebar.contains(event.target) &&
+          !sidebarToggle.contains(event.target) &&
+          !event.target.closest(".bottom-nav")
+        ) {
+          toggleSidebar();
+        }
+      });
+
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 992) {
+          // On desktop, ensure sidebar is visible
+          document.getElementById("sidebar").classList.remove("show");
+          document.getElementById("main-content").classList.remove("expanded");
+          document.body.style.overflow = "auto";
+
+          // Remove any mobile modals
+          const masterModal = document.getElementById("masterModal");
+          if (masterModal) {
+            masterModal.remove();
+          }
+        }
+        updateMobileAuthButtons();
+      });
+
+      // Global function to set active nav (updated)
+      function setActiveNav(menuId) {
+        if (!menuId.includes("toggleSidebar")) {
+          closeSidebarIfOpen();
+        }
+
+        let page = "";
+        if (menuId.includes("Dashboard")) page = "dashboard";
+        else if (menuId.includes("Transaksi")) page = "transaksi";
+        else if (menuId.includes("Laporan")) page = "laporan";
+        else if (menuId.includes("Master")) page = "master";
+
+        updateActiveNav(page);
+
+        document.querySelectorAll("#sidebar-nav .nav-link").forEach((link) => {
+          link.classList.remove("active");
+        });
+
+        if (menuId) {
+          const activeLink = document.querySelector(`a[onclick*="${menuId}"]`);
+          if (activeLink) {
+            activeLink.classList.add("active");
+          }
+        }
+      }
+
+      // Override functions untuk mobile behavior
+      const originalFunctions = {
+        showDashboard: window.showDashboard,
+        showTransaksi: window.transaksi?.showTransaksi,
+        showLaporan: window.laporan?.showLaporan,
+      };
+
+      window.showDashboard = function () {
+        closeSidebarIfOpen();
+        setActiveNav("showDashboard");
+        if (originalFunctions.showDashboard) {
+          originalFunctions.showDashboard();
+        }
+      };
+
+      if (window.transaksi && window.transaksi.showTransaksi) {
+        const originalShowTransaksi = window.transaksi.showTransaksi;
+        window.transaksi.showTransaksi = function () {
+          closeSidebarIfOpen();
+          setActiveNav("transaksi.showTransaksi");
+          return originalShowTransaksi.apply(this, arguments);
+        };
+      }
+
+      if (window.laporan && window.laporan.showLaporan) {
+        const originalShowLaporan = window.laporan.showLaporan;
+        window.laporan.showLaporan = function () {
+          closeSidebarIfOpen();
+          setActiveNav("laporan.showLaporan");
+          return originalShowLaporan.apply(this, arguments);
+        };
+      }
+    </script>
+
+    <!-- Main Application -->
+    <script>
+      // Initialize application
+      window.onload = function () {
+        console.log("Application loading...");
+
+        // Show dashboard
+        showDashboard();
+
+        // Initialize auth after Google API loads
+        setTimeout(() => {
+          if (typeof google !== "undefined") {
+            auth.init();
+          }
+        }, 1500);
+
+        // Add animation to content area
+        const contentArea = document.getElementById("content-area");
+        contentArea.style.animation = "fadeIn 0.5s ease forwards";
+
+        // Add click handlers to bottom nav items
+        document.querySelectorAll(".nav-item-mobile").forEach((item) => {
+          item.addEventListener("click", function (e) {
+            if (
+              !this.getAttribute("data-page").includes("login") &&
+              !this.getAttribute("data-page").includes("logout")
+            ) {
+              e.preventDefault();
+
+              const icon = this.querySelector("i");
+              icon.style.transform = "scale(1.3)";
+              setTimeout(() => {
+                icon.style.transform = "";
+              }, 300);
+            }
+          });
+        });
+
+        // Initial update of mobile auth buttons
+        updateMobileAuthButtons();
+      };
+    </script>
+  </body>
+</html>
