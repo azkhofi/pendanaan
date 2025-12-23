@@ -3,8 +3,10 @@ class DriveService {
     constructor() {
         this.CLIENT_ID = '1046860692698-4ji8ec2m9pcoierugui2t8rtnps2g635.apps.googleusercontent.com';
         this.SCOPES = 'https://www.googleapis.com/auth/drive.file';
-        // this.REDIRECT_URI = window.location.origin + '/oauth2callback.html';
-        this.REDIRECT_URI = 'http://127.0.0.1:5500/index.html';
+        // this.REDIRECT_URI = window.location.origin + '/index.html';
+        this.REDIRECT_URI = window.location.origin + '/oauth2callback.html';
+        // this.REDIRECT_URI = 'http://127.0.0.1:5500/oauth2callback.html';
+        // this.REDIRECT_URI = 'http://127.0.0.1:5500/oauth2callback.html';
         this.accessToken = null;
         this.folderId = null;
         this.isInitialized = false;
