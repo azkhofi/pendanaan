@@ -2,10 +2,14 @@
 const auth = {
   accessToken: null,
   tokenClient: null,
+  TOKEN_KEY: 'token', // Nama token diubah menjadi "token"
 
   // Initialize OAuth2 Token Client
   init: function () {
+    // Coba load token dari localStorage saat init
+    this.loadTokenFromStorage();
     this.updateLoginUI();
+    
     try {
       this.tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CONFIG.CLIENT_ID,
@@ -13,6 +17,8 @@ const auth = {
         callback: (response) => {
           if (response.access_token) {
             this.accessToken = response.access_token;
+            // Simpan token ke localStorage dengan nama "token"
+            this.saveTokenToStorage(response.access_token);
             this.updateLoginUI();
             utils.showSuccess(
               "Login berhasil! Sekarang Anda dapat menambah data."
@@ -57,15 +63,74 @@ const auth = {
     }
 
     this.accessToken = null;
+    // Hapus token dari localStorage saat logout
+    this.removeTokenFromStorage();
     this.updateLoginUI();
     alert("Anda telah logout. Hanya bisa melihat data.");
+  },
+
+  // Simpan token ke localStorage dengan nama "token"
+  saveTokenToStorage: function (token) {
+    try {
+      localStorage.setItem(this.TOKEN_KEY, token);
+      console.log("Token saved to localStorage as 'token'");
+    } catch (error) {
+      console.error("Error saving token to localStorage:", error);
+    }
+  },
+
+  // Load token dari localStorage dengan nama "token"
+  loadTokenFromStorage: function () {
+    try {
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (token) {
+        // Validasi token masih berlaku
+        this.accessToken = token;
+        console.log("Token 'token' loaded from localStorage");
+        return true;
+      }
+    } catch (error) {
+      console.error("Error loading token from localStorage:", error);
+    }
+    return false;
+  },
+
+  // Hapus token dari localStorage
+  removeTokenFromStorage: function () {
+    try {
+      localStorage.removeItem(this.TOKEN_KEY);
+      console.log("Token 'token' removed from localStorage");
+    } catch (error) {
+      console.error("Error removing token from localStorage:", error);
+    }
+  },
+
+  // Periksa apakah token masih valid
+  validateToken: function () {
+    if (!this.accessToken) {
+      return false;
+    }
+    
+    // Di sini Anda bisa menambahkan validasi tambahan
+    // Misalnya: memeriksa expiry time atau mengecek ke Google API
+    return true;
+  },
+
+  // Auto login jika ada token tersimpan
+  autoLoginIfTokenExists: function () {
+    if (this.loadTokenFromStorage() && this.validateToken()) {
+      console.log("Auto login dengan token tersimpan (token: 'token')");
+      this.updateLoginUI();
+      return true;
+    }
+    return false;
   },
 
   // Update UI setelah login
   updateLoginUI: function () {
     const loginStatus = document.getElementById("login-status");
     // Update desktop login UI
-    if (this.accessToken) {
+    if (this.isLoggedIn()) {
       loginStatus.classList.remove("d-none");
       document.getElementById("login-btn").style.display = "none";
       document.getElementById("login-status").style.display = "block";
@@ -119,9 +184,31 @@ const auth = {
 
   // Check if user is logged in
   isLoggedIn: function () {
-    return this.accessToken !== null;
+    return this.accessToken !== null && this.validateToken();
   },
+
+  // Fungsi helper untuk mendapatkan token (jika diperlukan di modul lain)
+  getToken: function () {
+    return this.accessToken;
+  },
+
+  // Fungsi untuk mengecek apakah token ada di localStorage (untuk debugging)
+  hasStoredToken: function () {
+    try {
+      return localStorage.getItem(this.TOKEN_KEY) !== null;
+    } catch (error) {
+      return false;
+    }
+  }
 };
 
 // Make auth available globally
 window.auth = auth;
+
+// Panggil auto login saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+  auth.autoLoginIfTokenExists();
+});
+
+// Untuk debugging: bisa akses token dari console browser
+// dengan mengetik: localStorage.getItem('token')
