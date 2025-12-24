@@ -268,8 +268,8 @@ const transaksi = {
 
       document.getElementById("content-area").innerHTML = content;
 
-// Initialize nominal formatting
-this.formatNominalInput();
+      // Initialize nominal formatting
+      this.formatNominalInput();
 
       // Initialize Drive service and update UI
       await this.initDriveUI();
@@ -407,13 +407,13 @@ this.formatNominalInput();
     });
   },
 
-  getRawNominalValue: function() {
-    const nominalInput = document.getElementById('nominal');
+  getRawNominalValue: function () {
+    const nominalInput = document.getElementById("nominal");
     if (!nominalInput) return 0;
-    
-    const rawValue = nominalInput.getAttribute('data-raw-value') || '';
-    return parseInt(rawValue.replace(/[^\d]/g, '')) || 0;
-},
+
+    const rawValue = nominalInput.getAttribute("data-raw-value") || "";
+    return parseInt(rawValue.replace(/[^\d]/g, "")) || 0;
+  },
 
   // Submit transaction form
   submitTransaksi: async function () {
@@ -875,6 +875,13 @@ this.formatNominalInput();
         statusText.innerHTML =
           '<i class="fas fa-spinner fa-spin me-2"></i>Opening Google authentication...';
         actionsDiv.innerHTML = "";
+      }
+
+      // AUTHENTICATION SUCCESS - Update UI
+      if (statusDiv && statusText && actionsDiv) {
+        statusDiv.className = "alert alert-success";
+        statusText.innerHTML =
+          '<i class="fas fa-check-circle me-2"></i>Successfully connected to Google Drive!';
       }
 
       // Start authentication
