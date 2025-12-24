@@ -10,6 +10,9 @@ const laporan = {
     keterangan: "",
   },
 
+  currentData: [], // Tambahkan ini untuk menyimpan data yang difilter
+  sortOrder: "asc", // 'asc' untuk terlama ke terbaru, 'desc' untuk terbaru ke terlama
+
   // Show report page
   showLaporan: async function () {
     setActiveNav("laporan.showLaporan");
@@ -303,12 +306,48 @@ const laporan = {
         return true;
       });
 
+      // Simpan data yang difilter
+      this.currentData = filteredData;
+      this.sortOrder = "asc"; // Reset ke default
+
       // Display results
       this.displayReport(filteredData);
     } catch (error) {
       console.error("Error applying filters:", error);
       alert("Error menerapkan filter: " + error.message);
     }
+  },
+
+  // Tambahkan fungsi sorting
+  sortReport: function (order) {
+    if (this.currentData.length === 0) return;
+
+    this.sortOrder = order;
+    let sortedData = [...this.currentData];
+
+    sortedData.sort((a, b) => {
+      try {
+        const dateA = new Date(a[0]);
+        const dateB = new Date(b[0]);
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      } catch (e) {
+        return 0;
+      }
+    });
+
+    this.displayReport(sortedData);
+
+    // Update button states
+    const buttons = document.querySelectorAll(".btn-group .btn");
+    buttons.forEach((btn) => {
+      if (btn.textContent.includes(order === "asc" ? "Terlama" : "Terbaru")) {
+        btn.classList.remove("btn-outline-primary", "btn-outline-secondary");
+        btn.classList.add("btn-primary");
+      } else {
+        btn.classList.remove("btn-primary");
+        btn.classList.add("btn-outline-primary", "btn-outline-secondary");
+      }
+    });
   },
 
   // Display report data
@@ -378,9 +417,19 @@ const laporan = {
             </div>
         `;
 
+    // 1. Urutkan data dari terlama ke terbaru (ascending)
+    const sortedData = [...data].sort((a, b) => {
+      try {
+        const dateA = new Date(a[0]);
+        const dateB = new Date(b[0]);
+        return dateA - dateB; // Ascending: terlama ke terbaru
+      } catch (e) {
+        return 0;
+      }
+    });
+
     // Display data
-    const html = data
-      .reverse()
+    const html = sortedData
       .map(
         (row, index) => `
             <tr>
@@ -497,6 +546,17 @@ const laporan = {
         return;
       }
 
+      // Urutkan data dari terlama ke terbaru untuk export juga
+      const sortedExportData = [...exportData].sort((a, b) => {
+        try {
+          const dateA = new Date(a[0]);
+          const dateB = new Date(b[0]);
+          return dateA - dateB; // Ascending: terlama ke terbaru
+        } catch (e) {
+          return 0;
+        }
+      });
+
       // Prepare headers
       const headers = [
         "Timestamp",
@@ -509,17 +569,16 @@ const laporan = {
       ];
 
       // Format data for export
-      const formattedData = exportData
-        .reverse()
-        .map((row) => [
-          utils.formatDate(row[0]),
-          row[1] || "",
-          row[2] || "",
-          parseFloat(row[3]) || 0,
-          row[4] || "",
-          row[5] || "",
-          row[6] || "",
-        ]);
+      const formattedData = sortedExportData.map((row, index) => [
+        index + 1,
+        utils.formatDate(row[0]),
+        row[1] || "",
+        row[2] || "",
+        parseFloat(row[3]) || 0,
+        row[4] || "",
+        row[5] || "",
+        row[6] || "",
+      ]);
 
       // Add total row
       const total = exportData.reduce(

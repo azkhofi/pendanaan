@@ -503,10 +503,10 @@ const transaksi = {
         this.dateConfig.manualInput = false;
         this.dateConfig.currentDate = null;
 
-         utils.showNotification(
-        'Pengaturan Tanggal', 
-        'Pengaturan tanggal dibatalkan, menggunakan tanggal otomatis', 
-        'info'
+        utils.showNotification(
+          "Pengaturan Tanggal",
+          "Pengaturan tanggal dibatalkan, menggunakan tanggal otomatis",
+          "info"
         );
       };
 
@@ -531,7 +531,7 @@ const transaksi = {
           statusText.textContent = "Menggunakan tanggal otomatis (saat ini)";
         }
 
-         utils.showSuccess('Tanggal direset ke waktu sekarang');
+        utils.showSuccess("Tanggal direset ke waktu sekarang");
       };
 
       // Get current date for submission (modifikasi fungsi submitTransaksi)
@@ -556,41 +556,58 @@ const transaksi = {
   },
 
   // Load transaction list
+  // Load transaction list
   loadTransaksiList: async function () {
     try {
       const data = await api.fetchData(`${CONFIG.SHEETS.DANA}!A2:H`);
 
       if (data.length > 0) {
-        const html = data
-          .slice(-50)
-          .reverse()
+        // 1. Tambahkan indeks ke setiap row untuk melacak urutan asli
+        const dataWithIndex = data.map((row, index) => ({
+          row: row,
+          index: index,
+          date: new Date(row[0]), // Konversi string date ke Date object
+        }));
+
+        // 2. Filter data yang memiliki tanggal valid
+        const validData = dataWithIndex.filter(
+          (item) => !isNaN(item.date.getTime())
+        );
+
+        // 3. Urutkan dari tanggal terlama ke terbaru (ascending)
+        validData.sort((a, b) => a.date - b.date);
+
+        // 4. Ambil 50 data terbaru (bisa diubah atau hapus untuk tampilkan semua)
+        const latestData = validData.slice(-50); // Ambil 50 terbaru setelah sorting
+
+        const html = latestData
           .map(
-            (row) => `
+            (item) => `
                     <tr>
-                        <td>${utils.formatDate(row[0])}</td>
-                        <td>${row[1] || "-"}</td>
+                        <td>${utils.formatDate(item.row[0])}</td>
+                        <td>${item.row[1] || "-"}</td>
                         <td><span class="badge bg-primary">${
-                          row[2] || "-"
+                          item.row[2] || "-"
                         }</span></td>
                         <td><strong>${utils.formatCurrency(
-                          row[3]
+                          item.row[3]
                         )}</strong></td>
-                        <td>${row[4] || "-"}</td>
+                        <td>${item.row[4] || "-"}</td>
                         <td><span class="badge bg-secondary">${
-                          row[5] || "-"
+                          item.row[5] || "-"
                         }</span></td>
-                        <td>${utils.truncateText(row[6] || "-", 30)}</td>
+                        <td>${utils.truncateText(item.row[6] || "-", 30)}</td>
                         <td>
                             ${
-                              row[7]
+                              item.row[7]
                                 ? `<div class="btn-group">
-                                      <a href="${row[7]}" target="_blank" class="btn btn-sm btn-outline-info" title="Lihat bukti">
-                                          <i class="fas fa-eye"></i>
-                                      </a>
-                                      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="transaksi.copyLink('${row[7]}')" title="Salin link">
-                                          <i class="fas fa-copy"></i>
-                                      </button>
-                                   </div>`
+                                          <a href="${item.row[7]}" target="_blank" class="btn btn-sm btn-outline-info" title="Lihat bukti">
+                                              <i class="fas fa-eye"></i>
+                                          </a>
+                                          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="transaksi.copyLink('${item.row[7]}')" title="Salin link">
+                                              <i class="fas fa-copy"></i>
+                                          </button>
+                                       </div>`
                                 : '<span class="text-muted">-</span>'
                             }
                         </td>
@@ -1200,7 +1217,11 @@ const transaksi = {
         console.error("Error during sign out:", error);
       } finally {
         await this.initDriveUI();
-        utils.showNotification("Google Drive", "Google Drive disconnected", "info");
+        utils.showNotification(
+          "Google Drive",
+          "Google Drive disconnected",
+          "info"
+        );
       }
     }
   },
