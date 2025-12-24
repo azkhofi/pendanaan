@@ -10,7 +10,7 @@ const utils = {
     }).format(num);
   },
 
-  // Format date
+  // Format baru dengan input manual
   formatDate: function (dateString) {
     if (!dateString) return "-";
     try {
@@ -42,6 +42,19 @@ const utils = {
     } catch (e) {
       return "";
     }
+  },
+
+  // TAMBAHKAN fungsi helper untuk transaksi.js
+  validateDate: function (day, month, year) {
+    // Validasi tahun
+    if (year < 2000 || year > 2100) return false;
+
+    // Validasi bulan
+    if (month < 0 || month > 11) return false;
+
+    // Validasi hari berdasarkan bulan
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return day >= 1 && day <= daysInMonth;
   },
 
   // Show loading spinner

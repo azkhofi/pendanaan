@@ -6,7 +6,7 @@ class DriveService {
     this.SCOPES = "https://www.googleapis.com/auth/drive.file";
     // this.REDIRECT_URI = window.location.origin + '/index.html';
     this.REDIRECT_URI = "https://azkhofi.github.io/pendanaan/oauth2callback.html";
-    // this.REDIRECT_URI = 'http://127.0.0.1:5500/oauth2callback.html';
+    this.REDIRECT_URI = 'http://127.0.0.1:5500/oauth2callback.html';
     // this.REDIRECT_URI = 'http://127.0.0.1:5500/oauth2callback.html';
     this.accessToken = null;
     this.folderId = null;

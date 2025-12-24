@@ -21,6 +21,12 @@ const transaksi = {
     return this;
   },
 
+  // Tambahkan ini untuk config tanggal
+  dateConfig: {
+    manualInput: false, // Flag untuk mode manual
+    currentDate: null, // Untuk menyimpan tanggal yang dipilih
+  },
+
   // Setup event listeners for auth
   setupEventListeners: function () {
     // Listen for auth completion when page loads
@@ -168,6 +174,128 @@ const transaksi = {
                                 </div>
                             </div>
                             
+                            <!---add input manual date--->
+                            <div class="row mt-2">
+    <div class="col-md-6 mb-3">
+        <label for="date-toggle" class="form-label">
+            <i class="fas fa-calendar-alt me-1"></i>Pengaturan Tanggal
+        </label>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="date-toggle" 
+                   onchange="transaksi.toggleManualDate()">
+            <label class="form-check-label" for="date-toggle">
+                Gunakan Tanggal Manual
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Form input tanggal manual (hidden by default) -->
+<div id="manual-date-form" class="row mb-4" style="display: none;">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-calendar-plus me-2"></i>Input Tanggal Manual
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Tanggal *</label>
+                        <input type="number" class="form-control" id="manual-day" 
+                               min="1" max="31" value="${new Date().getDate()}" 
+                               placeholder="DD" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Bulan *</label>
+                        <select class="form-select" id="manual-month" required>
+                            <option value="">Pilih Bulan</option>
+                            ${(() => {
+                              const currentMonth = new Date().getMonth();
+                              const months = [
+                                "Januari",
+                                "Februari",
+                                "Maret",
+                                "April",
+                                "Mei",
+                                "Juni",
+                                "Juli",
+                                "Agustus",
+                                "September",
+                                "Oktober",
+                                "November",
+                                "Desember",
+                              ];
+                              return months
+                                .map(
+                                  (month, index) =>
+                                    `<option value="${index}" ${
+                                      index === currentMonth ? "selected" : ""
+                                    }>
+                                        ${month}
+                                    </option>`
+                                )
+                                .join("");
+                            })()}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Tahun *</label>
+                        <input type="number" class="form-control" id="manual-year" 
+                               min="2000" max="2100" value="${new Date().getFullYear()}" 
+                               placeholder="YYYY" required>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Waktu</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="manual-hour" 
+                                   min="0" max="23" value="${new Date().getHours()}" 
+                                   placeholder="HH">
+                            <span class="input-group-text">:</span>
+                            <input type="number" class="form-control" id="manual-minute" 
+                                   min="0" max="59" value="${new Date().getMinutes()}" 
+                                   placeholder="MM">
+                        </div>
+                        <div class="form-text">Jam (0-23):Menit</div>
+                    </div>
+                    
+                    <div class="col-12 mt-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">
+                                    Tanggal otomatis: ${new Date().toLocaleDateString(
+                                      "id-ID"
+                                    )}
+                                </small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary me-2" 
+                                        onclick="transaksi.setManualDate()">
+                                    <i class="fas fa-check me-1"></i>Terapkan Tanggal
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="transaksi.cancelManualDate()">
+                                    <i class="fas fa-times me-1"></i>Batal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status tanggal -->
+<div id="date-status" class="alert alert-info mb-3" style="display: none;">
+    <i class="fas fa-info-circle me-2"></i>
+    <span id="date-status-text"></span>
+</div>
+
+<div class="row mt-3">
+
                             <!-- File Upload Section -->
                             <div class="row mt-3">
                                 <div class="col-md-12 mb-3">
@@ -270,6 +398,143 @@ const transaksi = {
 
       // Initialize nominal formatting
       this.formatNominalInput();
+
+      // Toggle manual date input
+      this.toggleManualDate = function () {
+        const toggle = document.getElementById("date-toggle");
+        const form = document.getElementById("manual-date-form");
+        const status = document.getElementById("date-status");
+        const statusText = document.getElementById("date-status-text");
+
+        if (toggle.checked) {
+          form.style.display = "block";
+          status.style.display = "block";
+          statusText.textContent =
+            "Mode tanggal manual aktif. Silakan atur tanggal di atas.";
+        } else {
+          form.style.display = "none";
+          status.style.display = "none";
+          this.dateConfig.manualInput = false;
+          this.dateConfig.currentDate = null;
+        }
+      };
+
+      // Set manual date
+      this.setManualDate = function () {
+        const day = parseInt(document.getElementById("manual-day").value);
+        const month = parseInt(document.getElementById("manual-month").value);
+        const year = parseInt(document.getElementById("manual-year").value);
+        const hour =
+          parseInt(document.getElementById("manual-hour").value) || 0;
+        const minute =
+          parseInt(document.getElementById("manual-minute").value) || 0;
+
+        // Validasi input
+        if (!day || !month || month === "" || !year) {
+          utils.showError("Harap isi Tanggal, Bulan, dan Tahun!");
+          return;
+        }
+
+        // Validasi tanggal
+        if (year < 2000 || year > 2100) {
+          utils.showError("Tahun harus antara 2000 dan 2100");
+          return;
+        }
+
+        if (month < 0 || month > 11) {
+          utils.showError("Bulan tidak valid");
+          return;
+        }
+
+        // Validasi hari berdasarkan bulan
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        if (day < 1 || day > daysInMonth) {
+          utils.showError(
+            `Tanggal harus antara 1 dan ${daysInMonth} untuk bulan ini`
+          );
+          return;
+        }
+
+        // Validasi jam dan menit
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+          utils.showError("Jam (0-23) dan Menit (0-59) harus valid");
+          return;
+        }
+
+        // Buat objek Date
+        const manualDate = new Date(year, month, day, hour, minute);
+
+        // Simpan ke config
+        this.dateConfig.currentDate = manualDate;
+        this.dateConfig.manualInput = true;
+
+        // Update status
+        const statusText = document.getElementById("date-status-text");
+        if (statusText) {
+          const formattedDate = manualDate.toLocaleDateString("id-ID", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          statusText.textContent = `Tanggal diset ke: ${formattedDate}`;
+          statusText.innerHTML += ` <button class="btn btn-sm btn-outline-danger ms-2" onclick="transaksi.resetManualDate()">
+                                    <i class="fas fa-undo me-1"></i>Reset ke Tanggal Sekarang
+                                  </button>`;
+        }
+
+        utils.showSuccess(
+          `Tanggal berhasil diset: ${manualDate.toLocaleDateString("id-ID")}`
+        );
+      };
+
+      // Cancel manual date
+      this.cancelManualDate = function () {
+        const toggle = document.getElementById("date-toggle");
+        const form = document.getElementById("manual-date-form");
+        const status = document.getElementById("date-status");
+
+        toggle.checked = false;
+        form.style.display = "none";
+        status.style.display = "none";
+
+        this.dateConfig.manualInput = false;
+        this.dateConfig.currentDate = null;
+
+         utils.showNotification(
+        'Pengaturan Tanggal', 
+        'Pengaturan tanggal dibatalkan, menggunakan tanggal otomatis', 
+        'info'
+        );
+      };
+
+      // Reset to current date
+      this.resetManualDate = function () {
+        const now = new Date();
+
+        // Reset form inputs
+        document.getElementById("manual-day").value = now.getDate();
+        document.getElementById("manual-month").value = now.getMonth();
+        document.getElementById("manual-year").value = now.getFullYear();
+        document.getElementById("manual-hour").value = now.getHours();
+        document.getElementById("manual-minute").value = now.getMinutes();
+
+        // Reset config
+        this.dateConfig.manualInput = false;
+        this.dateConfig.currentDate = null;
+
+        // Update status
+        const statusText = document.getElementById("date-status-text");
+        if (statusText) {
+          statusText.textContent = "Menggunakan tanggal otomatis (saat ini)";
+        }
+
+         utils.showSuccess('Tanggal direset ke waktu sekarang');
+      };
+
+      // Get current date for submission (modifikasi fungsi submitTransaksi)
 
       // Initialize Drive service and update UI
       await this.initDriveUI();
@@ -574,8 +839,13 @@ const transaksi = {
     }
 
     // Prepare data for spreadsheet
+    const transactionDate =
+      this.dateConfig.manualInput && this.dateConfig.currentDate
+        ? this.dateConfig.currentDate.toISOString()
+        : new Date().toISOString();
+
     const values = [
-      new Date().toISOString(),
+      transactionDate, // MENGGUNAKAN TANGGAL DARI CONFIG ATAU OTOMATIS
       namaDonatur,
       kategori,
       parseFloat(nominal),
@@ -743,6 +1013,11 @@ const transaksi = {
       form.reset();
     }
     this.removeFile();
+
+    // Reset tanggal manual
+    this.cancelManualDate();
+    this.dateConfig.manualInput = false;
+    this.dateConfig.currentDate = null;
   },
 
   // Copy link
@@ -925,7 +1200,7 @@ const transaksi = {
         console.error("Error during sign out:", error);
       } finally {
         await this.initDriveUI();
-        utils.showInfo("Google Drive disconnected");
+        utils.showNotification("Google Drive", "Google Drive disconnected", "info");
       }
     }
   },
