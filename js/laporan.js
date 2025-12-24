@@ -155,6 +155,43 @@ const laporan = {
                     <!-- Summary will be loaded here -->
                 </div>
                 
+                <!-- styling card block -->
+                <style>
+        .stat-card {
+            transition: transform 0.2s;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .stat-card .card-body {
+            padding: 1.5rem;
+        }
+        .stat-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card small {
+            font-size: 0.8rem;
+        }
+    </style>
+    
+    <h2 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Laporan Dana</h2>
+    
+    <!-- Filter Section -->
+    <!-- ... kode filter ... -->
+    
+    <!-- Summary Cards -->
+    <div class="mb-4" id="report-summary" style="display: none;">
+        <!-- Summary will be loaded here -->
+    </div>
+    
+    <!-- Report Table -->
+    <!-- ... kode tabel ... -->
+
+
                 <!-- Report Table -->
                 <div class="card">
                     <div class="card-header">
@@ -375,47 +412,44 @@ const laporan = {
     // Show summary
     document.getElementById("report-summary").style.display = "block";
     document.getElementById("report-summary").innerHTML = `
-            <div class="col-md-3 mb-3">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2">Total Data</h6>
-                        <h3 class="card-title">${data.length}</h3>
-                    </div>
-                </div>
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <div class="card bg-primary text-white" style="min-width: 200px; flex: 1;">
+            <div class="card-body text-center">
+                <h6 class="card-subtitle mb-2">Total Data</h6>
+                <h3 class="card-title">${data.length}</h3>
+                <small class="opacity-75">Transaksi</small>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2">Total Nominal</h6>
-                        <h3 class="card-title">${utils.formatCurrency(
-                          totalNominal
-                        )}</h3>
-                    </div>
-                </div>
+        </div>
+        
+        <div class="card bg-success text-white" style="min-width: 200px; flex: 1;">
+            <div class="card-body text-center">
+                <h6 class="card-subtitle mb-2">Total Nominal</h6>
+                <h3 class="card-title">${utils.formatCurrency(
+                  totalNominal
+                )}</h3>
+                <small class="opacity-75">Keseluruhan</small>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card bg-info text-white">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2">Rata-rata</h6>
-                        <h3 class="card-title">${utils.formatCurrency(
-                          avgNominal
-                        )}</h3>
-                    </div>
-                </div>
+        </div>
+        
+        <div class="card bg-info text-white" style="min-width: 200px; flex: 1;">
+            <div class="card-body text-center">
+                <h6 class="card-subtitle mb-2">Rata-rata</h6>
+                <h3 class="card-title">${utils.formatCurrency(avgNominal)}</h3>
+                <small class="opacity-75">Per transaksi</small>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2">Donatur Unik</h6>
-                        <h3 class="card-title">${
-                          [...new Set(data.map((row) => row[1]))].filter(
-                            Boolean
-                          ).length
-                        }</h3>
-                    </div>
-                </div>
+        </div>
+        
+        <div class="card bg-warning text-dark" style="min-width: 200px; flex: 1;">
+            <div class="card-body text-center">
+                <h6 class="card-subtitle mb-2">Donatur Unik</h6>
+                <h3 class="card-title">${
+                  [...new Set(data.map((row) => row[1]))].filter(Boolean).length
+                }</h3>
+                <small class="opacity-75">Orang</small>
             </div>
-        `;
+        </div>
+    </div>
+`;
 
     // 1. Urutkan data dari terlama ke terbaru (ascending)
     const sortedData = [...data].sort((a, b) => {
@@ -602,34 +636,447 @@ const laporan = {
 
   // Print report
   printReport: function () {
-    const printContent = document.getElementById("report-table").outerHTML;
-    const originalContent = document.body.innerHTML;
+    if (!this.currentData || this.currentData.length === 0) {
+      alert("Tidak ada data untuk diprint. Terapkan filter terlebih dahulu.");
+      return;
+    }
 
-    document.body.innerHTML = `
-            <html>
-                <head>
-                    <title>Laporan Dana</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                        .total-row { font-weight: bold; background-color: #e9ecef; }
-                    </style>
-                </head>
-                <body>
-                    <h2>Laporan Dana</h2>
-                    <p>Tanggal cetak: ${new Date().toLocaleDateString(
-                      "id-ID"
-                    )}</p>
-                    ${printContent}
-                </body>
-            </html>
-        `;
+    const printWindow = window.open("", "_blank");
+    const sortedData = [...this.currentData];
+    sortedData.sort((a, b) => {
+      try {
+        const dateA = new Date(a[0]);
+        const dateB = new Date(b[0]);
 
-    window.print();
-    document.body.innerHTML = originalContent;
-    location.reload();
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          return 0;
+        }
+
+        // Gunakan sortOrder yang sama (ascending untuk terlama ke terbaru)
+        return this.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      } catch (e) {
+        return 0;
+      }
+    });
+    console.log("First date:", sortedData[0] ? sortedData[0][0] : "No data");
+    console.log(
+      "Last date:",
+      sortedData[sortedData.length - 1]
+        ? sortedData[sortedData.length - 1][0]
+        : "No data"
+    );
+    const totalNominal = sortedData.reduce(
+      (sum, row) => sum + (parseFloat(row[3]) || 0),
+      0
+    );
+
+    // Hitung jumlah baris per halaman
+    const pageConfig = {
+      firstPage: {
+        rowsPerPage: 35, 
+        extraSpace: 80, 
+      },
+      otherPages: {
+        rowsPerPage: 80,
+        extraSpace: 20, 
+      },
+    };
+
+    // HITUNG PEMBAGIAN HALAMAN
+    let pages = [];
+    let currentIndex = 0;
+    let pageNumber = 1;
+
+    while (currentIndex < sortedData.length) {
+      const isFirstPage = pageNumber === 1;
+      const config = isFirstPage ? pageConfig.firstPage : pageConfig.otherPages;
+      const rowsPerPage = config.rowsPerPage;
+
+      // Ambil data untuk halaman ini
+      const pageData = sortedData.slice(
+        currentIndex,
+        currentIndex + rowsPerPage
+      );
+
+      pages.push({
+        data: pageData,
+        pageNumber: pageNumber,
+        startIndex: currentIndex,
+        config: config,
+        isFirstPage: isFirstPage,
+        isLastPage: currentIndex + rowsPerPage >= sortedData.length,
+      });
+
+      currentIndex += pageData.length;
+      pageNumber++;
+    }
+
+    const totalPages = pages.length;
+
+    // 4. GENERATE SETIAP HALAMAN DENGAN KONFIGURASINYA
+    let pagesHTML = "";
+
+    pages.forEach((pageInfo) => {
+      pagesHTML += this.generatePrintPage(
+        pageInfo.data,
+        pageInfo.pageNumber,
+        pageInfo.isLastPage,
+        totalNominal,
+        pageInfo.startIndex,
+        totalPages,
+        pageInfo.config,
+        pageInfo.isFirstPage
+      );
+    });
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Laporan Dana Haul Masyayikh & Harlah ke-77</title>
+        <title>Pondok Pesantren Nurul Jadid Probolinggo</title>
+        <style>
+            @media print {
+                @page {
+                    margin: 10mm 15mm;
+                    size: F4 portrait;
+                }
+                
+                @page :first {
+                    margin-top: 5mm; /* Margin khusus untuk halaman pertama */
+                }
+                
+                body {
+                    font-family: 'Arial', sans-serif;
+                    font-size: 10pt;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 1;
+                }
+                
+                .page {
+                    page-break-after: always;
+                    width: 100%;
+                    min-height: 310mm; /* Tinggi F4 (330mm - margin 20mm) */
+                    position: relative;
+                }
+                
+                .page:last-child {
+                    page-break-after: auto;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 9pt;
+                }
+                
+                th, td {
+                    border: 1px solid #ccc;
+                    padding: 3px 2px;
+                    text-align: left;
+                    font-size: 8pt;
+                    line-height: 1.1;
+                }
+                
+                /* Sembunyikan tfoot di semua halaman kecuali yang terakhir */
+                tfoot {
+                    display: none;
+                }
+                
+                /* Hanya tampilkan tfoot di halaman terakhir */
+                .last-page tfoot {
+                    display: table-footer-group;
+                }
+                
+                /* Header tabel hanya di halaman pertama */
+                thead {
+                    display: table-header-group;
+                }
+                
+                /* Pastikan baris tidak terpotong */
+                tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
+                
+                /* Kontrol page break */
+                .page-break-control {
+                    page-break-inside: avoid;
+                }
+                
+                /* Footer dengan nomor halaman */
+                .page-footer {
+                    position: absolute;
+                    bottom: 5mm;
+                    right: 0;
+                    left: 0;
+                    text-align: center;
+                    font-size: 9pt;
+                    color: #666;
+                }
+            }
+            
+            /* Untuk preview di browser */
+            body {
+                font-family: 'Arial', sans-serif;
+                font-size: 10pt;
+                margin: 0;
+                padding: 10mm 15mm;
+                width: 215mm; /* Lebar F4 */
+                min-height: 330mm; /* Tinggi F4 */
+            }
+            
+            .page {
+                margin-bottom: 20mm;
+                border-bottom: 1px dashed #ccc;
+                width: 100%;
+                min-height: 310mm;
+                position: relative;
+            }
+            
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            th, td {
+                border: 1px solid #ccc;
+                padding: 3px 2px;
+                font-size: 9pt;
+            }
+            
+            th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+            .page-footer {
+                position: absolute;
+                bottom: 10px;
+                right: 0;
+                left: 0;
+                text-align: center;
+                font-size: 9pt;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        ${pagesHTML}
+        
+        <script>
+              window.onload = function() {
+                // Periksa apakah ada konten di halaman pertama
+                const firstPage = document.querySelector('.page');
+                if (firstPage) {
+                    const firstPageHeight = firstPage.offsetHeight;
+                    const pageHeight = 330 * 3.78; // F4 height in pixels (330mm * 3.78px/mm)
+                    
+                    console.log('First page height:', firstPageHeight, 'px');
+                    console.log('F4 page height:', pageHeight, 'px');
+                    
+                    // Jika halaman pertama terlalu tinggi, sesuaikan
+                    if (firstPageHeight > pageHeight) {
+                        console.log('First page too tall, adjusting...');
+                        // Kurangi padding atau margin
+                        const tables = firstPage.querySelectorAll('table');
+                        tables.forEach(table => {
+                            table.style.marginTop = '0';
+                        });
+                    }
+                }
+                
+                // Hitung ulang total pages untuk verifikasi
+                const pages = document.querySelectorAll('.page');
+                console.log('Total pages found:', pages.length);
+                
+                setTimeout(function() {
+                    window.print();
+                    setTimeout(function() {
+                        window.close();
+                    }, 500);
+                }, 300);
+            };
+        </script>
+    </body>
+    </html>
+`);
+
+    printWindow.document.close();
+  },
+
+  // Fungsi untuk generate halaman print
+  generatePrintPage: function (
+    pageData,
+    pageNumber,
+    isLastPage,
+    totalNominal,
+    startIndex,
+    totalPages,
+    config,
+    isFirstPageParam)
+   {
+    const isFirstPage = typeof isFirstPageParam !== 'undefined' ? isFirstPageParam : (pageNumber === 1);
+    if (!config) {
+        config = {
+            rowsPerPage: isFirstPage ? 35 : 40,
+            extraSpace: isFirstPage ? 80 : 20
+        };
+    }
+    const tableRows = pageData
+      .map(
+        (row, index) => `
+        <tr>
+            <td style="text-align: center; width: 5%;">${
+              startIndex + index + 1
+            }</td>
+            <td style="width: 12%;">${utils.formatDate(row[0])}</td>
+            <td style="width: 15%;">${row[1] || "-"}</td>
+            <td style="width: 10%;">${row[2] || "-"}</td>
+            <td style="text-align: right; width: 13%;">${utils.formatCurrency(
+              row[3]
+            )}</td>
+            <td style="width: 15%;">${row[4] || "-"}</td>
+            <td style="width: 10%;">${row[5] || "-"}</td>
+            <td style="width: 20%;">${row[6] || "-"}</td>
+        </tr>
+    `
+      )
+      .join("");
+
+    // Header hanya di halaman pertama
+     const headerHTML = isFirstPage ? `
+        <div style="margin-bottom: 8mm; page-break-inside: avoid;">
+            <h2 style="text-align: center; margin: 0 0 3mm 0; font-size: 16pt;">Dokumentasi Dana Masuk</h2>
+            <h2 style="text-align: center; margin: 0 0 3mm 0; font-size: 16pt;">Haul Masyayikh dan Harlah ke-77</h2>
+            <h2 style="text-align: center; margin: 0 0 3mm 0; font-size: 15pt;">Pondok Pesantren Nurul Jadid Paiton Probolinggo</h2>
+            <p style="text-align: center; margin: 0 0 3mm 0; font-size: 10pt; color: #666;">
+                Dicetak: ${new Date().toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+            </p>
+            <div style="background: #f5f5f5; padding: 4mm; border-left: 4px solid #007bff; font-size: 10pt; margin-bottom: 4mm;">
+                <strong>RINGKASAN:</strong> ${this.currentData.length} transaksi | 
+                <strong>TOTAL:</strong> ${utils.formatCurrency(totalNominal)}<br>
+                <strong>FILTER:</strong> ${this.getAppliedFiltersText()}
+            </div>
+        </div>
+    ` : `
+        <div style="
+            margin-top: 3mm;
+            margin-bottom: 3mm;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        ">
+            <div style="
+                background: #ffffffff;
+                padding: 3mm;
+                border-left: 3px solid #1268b3ff;
+                border-radius: 3px;
+            ">
+                <strong>LAPORAN DANA</strong> 
+                <span>Lanjutan dari halaman ${pageNumber - 1}</span>
+            </div>
+        </div>
+    `;
+
+  // FONT SIZE DAN PADDING BERBEDA
+    const tableFontSize = isFirstPage ? '9pt' : '8pt';
+    const thPadding = isFirstPage ? '3mm 2mm' : '2mm 1mm';
+    const tdPadding = isFirstPage ? '2mm 1mm' : '1.5mm 1mm';
+    
+    return `
+        <div class="page ${isLastPage ? 'last-page' : ''} ${isFirstPage ? 'first-page' : 'other-page'}" style="
+            position: relative;
+            page-break-after: ${isLastPage ? 'auto' : 'always'};
+            min-height: ${330 - config.extraSpace}mm;
+            padding-bottom: 10mm;
+        ">
+            ${headerHTML}
+            
+            <table style="
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: ${tableFontSize};
+                margin-top: ${isFirstPage ? '0' : '1mm'};
+            ">
+                ${isFirstPage ? `
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">No</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Tanggal</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Donatur</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Kategori</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Nominal</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Penerima</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Setoran</th>
+                        <th style="border: 1px solid #333; padding: ${thPadding}; text-align: center; font-weight: bold;">Keterangan</th>
+                    </tr>
+                </thead>
+                ` : ''}
+                
+                <tbody>
+                    ${tableRows}
+                </tbody>
+                
+                ${isLastPage ? `
+                <tfoot>
+                    <tr style="background-color: #e9ecef; font-weight: bold; page-break-inside: avoid;">
+                        <td colspan="4" style="border: 1px solid #333; padding: ${thPadding}; text-align: right;"><strong>TOTAL KESELURUHAN:</strong></td>
+                        <td style="border: 1px solid #333; padding: ${thPadding}; text-align: right;"><strong>${utils.formatCurrency(totalNominal)}</strong></td>
+                        <td colspan="3" style="border: 1px solid #333; padding: ${thPadding};"></td>
+                    </tr>
+                </tfoot>
+                ` : ''}
+            </table>
+            
+            <div style="
+                position: absolute;
+                bottom: 3mm;
+                right: 15mm;
+                font-size: 9pt;
+                color: #666;
+            ">
+                Halaman ${pageNumber} dari ${totalPages}
+                
+            </div>
+        </div>
+    `;
+},
+
+  // Tambahkan function untuk mendapatkan teks filter yang diterapkan
+  getAppliedFiltersText: function () {
+    const filters = [];
+
+    if (this.currentFilters.startDate) {
+      filters.push(`Dari: ${this.currentFilters.startDate}`);
+    }
+    if (this.currentFilters.endDate) {
+      filters.push(`Sampai: ${this.currentFilters.endDate}`);
+    }
+    if (this.currentFilters.donatur) {
+      filters.push(`Donatur: ${this.currentFilters.donatur}`);
+    }
+    if (this.currentFilters.kategori) {
+      filters.push(`Kategori: ${this.currentFilters.kategori}`);
+    }
+    if (this.currentFilters.penerima) {
+      filters.push(`Penerima: ${this.currentFilters.penerima}`);
+    }
+    if (this.currentFilters.setor) {
+      filters.push(`Setor: ${this.currentFilters.setor}`);
+    }
+    if (this.currentFilters.keterangan) {
+      filters.push(`Keterangan: ${this.currentFilters.keterangan}`);
+    }
+
+    return filters.length > 0
+      ? filters.join(" | ")
+      : "Semua Data (tanpa filter)";
   },
 };
 
