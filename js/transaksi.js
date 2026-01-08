@@ -436,7 +436,7 @@ const transaksi = {
         }
 
         // Validasi tanggal
-        if (year < 2000 || year > 2100) {
+        if (isNaN(day) || isNaN(month) || isNaN(year)) {
           utils.showError("Tahun harus antara 2000 dan 2100");
           return;
         }
