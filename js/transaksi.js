@@ -430,7 +430,7 @@ const transaksi = {
           parseInt(document.getElementById("manual-minute").value) || 0;
 
         // Validasi input
-        if (!day || !month || month === "" || !year) {
+        if (isNaN(day) || isNaN(month) || isNaN(year)) {
           utils.showError("Harap isi Tanggal, Bulan, dan Tahun!");
           return;
         }
